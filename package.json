@@ -1,0 +1,12 @@
+{
+  "name": "evildeadbot",
+  "version": "0.1.0",
+  "description": "BotDiscord",
+  "main": "main.js",
+  "repository": "https://github.com/evildead28/EvilBot.git",
+  "author": "<evildead280778@gmail.com>",
+  "license": "MIT",
+  "dependencies": {
+    "discord.js": "discordjs/discord.js"
+  }
+}
