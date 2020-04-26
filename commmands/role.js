@@ -1,15 +1,15 @@
-if(cmd ==="role") {
+module.exports = (client, message, args) => {
   const channel = client.channels.cache.find(r => r.name === "logs");
-  const role = msg.guild.roles.cache.find(r => r.name === args[0]);
-  if (!role) return msg.channel.send("Ce rôle n'existe pas !");
+  const role = message.guild.roles.cache.find(r => r.name === args[0]);
+  if (!role) return message.channel.send("Ce rôle n'existe pas !");
 
-    if (msg.member.roles.cache.find(r => r.name === args[0])) {
-      msg.member.roles.remove(role);
-      channel.send(`J'ai supprimé le rôle ${role} à ${msg.author}.`);
-      msg.delete({ timeout: 2000 });
+    if (message.member.roles.cache.find(r => r.name === args[0])) {
+      message.member.roles.remove(role);
+      channel.send(`J'ai supprimé le rôle ${role} à ${message.author}.`);
+      message.delete({ timeout: 2000 });
     } else {
-      msg.member.roles.add(role);
-      channel.send(`J'ai ajouté le rôle ${role} à ${msg.author}.`);
-      msg.delete({ timeout: 2000 });
+      message.member.roles.add(role);
+      channel.send(`J'ai ajouté le rôle ${role} à ${message.author}.`);
+      message.delete({ timeout: 2000 });
     }
-  }
+};

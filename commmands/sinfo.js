@@ -1,9 +1,11 @@
-if (cmd === "sinfo") {
+const { MessageEmbed } = require("discord.js");
+
+module.exports = (client, message) => {
   const embed = new MessageEmbed()
-  .setDescription(msg.guild.name)
-  .setThumbnail(msg.guild.iconURL())
-  .addField("Membres", msg.guild.memberCount)
-  .setFooter(msg.guild.owner.user.tag, msg.guild.owner.user.avatarURL())           
+  .setDescription(message.guild.name)
+  .setThumbnail(message.guild.iconURL())
+  .addField("Membres", message.guild.memberCount)
+  .setFooter(message.guild.owner.user.tag, message.guild.owner.user.avatarURL())           
   .setTimestamp();        
-msg.channel.send(embed);
-}
+message.channel.send(embed);
+};
