@@ -1,3 +1,1 @@
-module.exports = () => {
-  console.log("Je suis prèt");
-}
+client.on("ready", () => console.log("EvilDeadBot est pret"));
