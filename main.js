@@ -4,9 +4,10 @@ const client = new Client({ disableMentions : "everyone" });
 
 client.on("message", msg => {
   if (msg.author.bot) return;
-  if (msg.content.indexOf(PREFIX) !== 0) return;
-  const args = msg.content.split(/ +/g);
+  const args = msg.content.slice(PREFIX.length).trim().split(/ +/g);
   const cmd = args.shift().toLowerCase();
+  console.log(args);
+  console.log(cmd);
   if (cmd === "repeat") {
     msg.channel.send(args.join(" ")),
     msg.delete({ timeout: 2000 }).then(console.log("Un message a été supprimé"));
