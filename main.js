@@ -1,20 +1,69 @@
-const { Client, Collection } = require("discord.js");
-const { TOKEN, PREFIX } = require("./config");
-const client = new Client({ disableMentions : "everyone" });
+const { Client, Collection } = require('discord.js');
+const { TOKEN, PREFIX } = require('./config');
+const { readdirSync } = require("fs");
 
-client.PREFIX = PREFIX;
+const client = new Client();
+["commands", "cooldowns"].forEach(x => client[x] = new Collection());
 
-client.commands = new Collection();
-client.commands.set("repeat", require("./commmands/repeat.js"));
-client.commands.set("role", require("./commmands/role.js"));
-client.commands.set("sinfo", require("./commmands/sinfo.js"));
-client.commands.set("animals", require("./commmands/animals.js"));
+const loadCommands = (dir = "./commands/") => {
+  readdirSync(dir).forEach(dirs => {
+    const commands = readdirSync(`${dir}/${dirs}/`).filter(files => files.endsWith(".js"));
 
-client.on("ready", () => require("./events/ready.js")(client));
-client.on("message", message => require("./events/message.js")(client, message));
-client.on("guildMemberAdd", member => require("./events/guildMemberAdd.js")(client, member));
-client.on("guildMemberRemove", member => require("./events/guildMemberRemove.js")(client, member));
+    for (const file of commands) {
+      const getFileName = require(`${dir}/${dirs}/${file}`);
+      client.commands.set(getFileName.help.name, getFileName);
+      console.log(`Commande chargée: ${getFileName.help.name}`);
+    };
+  });
+};
 
+loadCommands();
+
+client.on('message', message => {
+  if (!message.content.startsWith(PREFIX) || message.author.bot) return;
+  const args = message.content.slice(PREFIX.length).split(/ +/);
+  const commandName = args.shift().toLowerCase();
+  const user = message.mentions.users.first();
+   
+  const command = client.commands.get(commandName) || client.commands.find(cmd => cmd.help.aliases && cmd.help.aliases.includes(commandName)); 
+  if (!command) return;
+
+  if (command.help.permissions && !message.member.hasPermission('BAN_MEMBERS')) return message.reply("tu n'as pas les permissions pour taper cette commande! ");
+
+  if (command.help.args && !args.length) {
+    let noArgsReply = `Il nous faut des arguments pour cette commande, ${message.author}!`;
+
+    if (command.help.usage) noArgsReply += `\nVoici comment utiliser la commande: \`${PREFIX}${command.help.name} ${command.help.usage}\``
+
+    return message.channel.send(noArgsReply);
+  };
+
+  if (command.help.isUserAdmin && !user) return message.reply('Il faut mentionner un utilisateur !');
+
+  if (command.help.isUserAdmin && message.guild.member(user).hasPermission('BAN_MEMBERS')) return message.reply("tu ne pas utliser cette commande sur cet utilisateur");  
+
+  if (!client.cooldowns.has(command.help.name)) {
+    client.cooldowns.set(command.help.name, new Collection());
+  };
+
+  const timeNow = Date.now();
+  const tStamps = client.cooldowns.get(command.help.name);
+  const cdAmount = (command.help.cooldown || 5) * 1000;
+
+  if (tStamps.has(message.author.id)) {
+    const cdExpirationTime = tStamps.get(message.author.id) + cdAmount;
+
+    if (timeNow < cdExpirationTime) {
+      timeLeft = (cdExpirationTime - timeNow) / 1000;
+      return message.reply(`merci d'attendre ${timeLeft.toFixed(0)} seconde(s) avant de réutiliser la commande \`${command.help.name}\`.`)
+    }
+  }
+
+  tStamps.set(message.author.id, timeNow);
+  setTimeout(() => tStamps.delete(message.author.id), cdAmount);
+
+  command.run(client, message, args);
+});
+
+client.on('ready', () => console.log(`EvilDeadBOT est pret ! `));
 client.login(TOKEN);
-client.on("error", console.error);
-client.on("warn", console.warn);
